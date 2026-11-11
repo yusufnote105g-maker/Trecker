@@ -17,9 +17,8 @@ jobs:
           unzip HabitTracker-project-2026-11-11-final-v2.zip
           cd habittracker
           
-          # Автоматически добавляем недостающий импорт в два файла
-          sed -i '1i import androidx.compose.runtime.saveable.rememberSaveable' app/src/main/java/com/example/habittracker/ui/screens/taskform/TaskFormScreen.kt
-          sed -i '1i import androidx.compose.runtime.saveable.rememberSaveable' app/src/main/java/com/example/habittracker/ui/screens/tasks/TasksScreen.kt
+          sed -i '/^package/a import androidx.compose.runtime.saveable.rememberSaveable' app/src/main/java/com/example/habittracker/ui/screens/taskform/TaskFormScreen.kt
+          sed -i '/^package/a import androidx.compose.runtime.saveable.rememberSaveable' app/src/main/java/com/example/habittracker/ui/screens/tasks/TasksScreen.kt
           
           chmod +x gradlew
           ./gradlew assembleDebug
