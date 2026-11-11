@@ -12,6 +12,12 @@ jobs:
         java-version: '17'
         distribution: 'zulu'
         
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Install unzip
+      run: sudo apt-get update && sudo apt-get install -y unzip
+      
     - name: Unzip project
       run: unzip HabitTracker-project-2026-11-11-final-v2.zip
       
