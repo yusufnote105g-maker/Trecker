@@ -12,14 +12,25 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
           
-      - name: Fix Dependencies and Build
+      - name: Fix all errors and build
         run: |
           unzip HabitTracker-project-2026-11-11-final-v2.zip
           cd habittracker
           
-          # Внедряем недостающую библиотеку в build.gradle.kts
-          sed -i '/dependencies/a \    implementation("androidx.compose.runtime:runtime-saveable")' app/build.gradle.kts
+          # 1. Исправляем несуществующую версию KSP плагина
+          sed -i 's/2.0.21-1.0.28/2.0.21-1.0.25/g' build.gradle.kts
+          if [ -f gradle/libs.versions.toml ]; then
+            sed -i 's/2.0.21-1.0.28/2.0.21-1.0.25/g' gradle/libs.versions.toml
+          fi
           
+          # 2. Добавляем недостающую библиотеку в build.gradle.kts
+          sed -i '/dependencies {/a \    implementation("androidx.compose.runtime:runtime-saveable")' app/build.gradle.kts
+          
+          # 3. Добавляем недостающий импорт в два файла
+          sed -i '/^package/a import androidx.compose.runtime.saveable.rememberSaveable' app/src/main/java/com/example/habittracker/ui/screens/taskform/TaskFormScreen.kt
+          sed -i '/^package/a import androidx.compose.runtime.saveable.rememberSaveable' app/src/main/java/com/example/habittracker/ui/screens/tasks/TasksScreen.kt
+          
+          # Запускаем сборку
           chmod +x gradlew
           ./gradlew assembleDebug
           
