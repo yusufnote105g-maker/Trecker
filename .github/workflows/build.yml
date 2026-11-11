@@ -12,13 +12,13 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
           
-      - name: Unzip, Fix Imports and Build
+      - name: Fix Dependencies and Build
         run: |
           unzip HabitTracker-project-2026-11-11-final-v2.zip
           cd habittracker
           
-          sed -i '/^package/a import androidx.compose.runtime.saveable.rememberSaveable' app/src/main/java/com/example/habittracker/ui/screens/taskform/TaskFormScreen.kt
-          sed -i '/^package/a import androidx.compose.runtime.saveable.rememberSaveable' app/src/main/java/com/example/habittracker/ui/screens/tasks/TasksScreen.kt
+          # Внедряем недостающую библиотеку в build.gradle.kts
+          sed -i '/dependencies/a \    implementation("androidx.compose.runtime:runtime-saveable")' app/build.gradle.kts
           
           chmod +x gradlew
           ./gradlew assembleDebug
