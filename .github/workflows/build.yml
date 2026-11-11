@@ -12,25 +12,35 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
           
-      - name: Fix all errors and build
+      - name: Fix and Build
         run: |
           unzip HabitTracker-project-2026-11-11-final-v2.zip
           cd habittracker
           
-          # 1. Исправляем несуществующую версию KSP плагина
+          # 1. Исправляем версию KSP плагина
           sed -i 's/2.0.21-1.0.28/2.0.21-1.0.25/g' build.gradle.kts
           if [ -f gradle/libs.versions.toml ]; then
             sed -i 's/2.0.21-1.0.28/2.0.21-1.0.25/g' gradle/libs.versions.toml
           fi
           
-          # 2. Добавляем недостающую библиотеку в build.gradle.kts
-          sed -i '/dependencies {/a \    implementation("androidx.compose.runtime:runtime-saveable")' app/build.gradle.kts
+          # 2. Умный Python-скрипт, который сам вставит библиотеку и импорты
+          python3 -c "
+          import re
           
-          # 3. Добавляем недостающий импорт в два файла
-          sed -i '/^package/a import androidx.compose.runtime.saveable.rememberSaveable' app/src/main/java/com/example/habittracker/ui/screens/taskform/TaskFormScreen.kt
-          sed -i '/^package/a import androidx.compose.runtime.saveable.rememberSaveable' app/src/main/java/com/example/habittracker/ui/screens/tasks/TasksScreen.kt
+          # Внедряем библиотеку в build.gradle.kts
+          with open('app/build.gradle.kts', 'r') as f: c = f.read()
+          if 'runtime-saveable' not in c:
+              c = re.sub(r'dependencies\s*\{', r'dependencies {\n    implementation(\"androidx.compose.runtime:runtime-saveable\")', c, count=1)
+          with open('app/build.gradle.kts', 'w') as f: f.write(c)
           
-          # Запускаем сборку
+          # Внедряем импорт в два файла
+          for file in ['app/src/main/java/com/example/habittracker/ui/screens/taskform/TaskFormScreen.kt', 'app/src/main/java/com/example/habittracker/ui/screens/tasks/TasksScreen.kt']:
+              with open(file, 'r') as f: c = f.read()
+              if 'import androidx.compose.runtime.saveable.rememberSaveable' not in c:
+                  c = re.sub(r'(package\s+[\w\.]+)', r'\1\nimport androidx.compose.runtime.saveable.rememberSaveable', c, count=1)
+              with open(file, 'w') as f: f.write(c)
+          "
+          
           chmod +x gradlew
           ./gradlew assembleDebug
           
